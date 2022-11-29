@@ -1,0 +1,99 @@
+---
+title: "Wordle on Keyboard"
+subtitle: "STA 199 Final Project"
+author: "Dylan Mitchell"
+format: pdf
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r load-packages, message = FALSE}
+
+library(tidyverse)
+library(remotes)
+library(ggkeyboard)
+```
+
+```{r}
+#| label: reading-in-words
+
+wordle <- (read_csv("https://raw.githubusercontent.com/tabatkins/wordle-list/main/words", col_names = "word"))
+```
+
+```{r}
+#| label: finding-the-first-letter
+
+wordle <- wordle |>
+  mutate(first_letter = str_sub(word, start = 1, end = 1))
+```
+
+```{r}
+#| label: counting-occurences
+
+wordle_counts <- wordle |>
+  count(first_letter, sort = TRUE)
+```
+
+```{r}
+#| label: setting-conditions
+
+wordle_counts <- wordle_counts |>
+  mutate(color = case_when(
+    n <= 217 ~ "#FFFF00", #yellow
+    n > 217 & n <= 429 ~ "#87CEEB", #sky blue
+    n > 429 & n <= 646 ~ "#0000FF", #blue
+    n > 646 & n <= 882 ~ "#DC143C", #crimson
+    n > 882 ~ "#8B0000" #crimson
+  ),
+  first_letter = str_to_upper(first_letter)
+  )
+
+```
+
+```{r}
+#| label: finding-color-boundaries
+
+wordle_counts |>
+  summarize(
+    min = min(n),
+    mean = mean(n),
+    q20 = quantile(n, 0.2),
+    q40 = quantile(n, 0.4),
+    q60 = quantile(n, 0.6),
+    q80 = quantile(n, 0.8),
+    max = max(n)
+  )
+
+wordle_counts |>
+  ggplot(aes(x = first_letter, y = n)) +
+  geom_col() +
+  geom_hline(yintercept = 882)
+```
+
+```{r}
+#| label: fixing-order
+
+keys <- read_csv("https://raw.githubusercontent.com/sharlagelfand/ggkeyboard/main/data-raw/sixty_percent.csv")
+
+wordle_counts_ordered <- keys |>
+  filter(key_label %in% LETTERS) |>
+  select(key)|>
+  left_join(wordle_counts, by = c("key" = "first_letter"))
+
+
+```
+
+```{r}
+#| label: drawing-keyboard
+
+ggkeyboard(sixty_percent, palette = keyboard_palette("magic"), font_family = "Helvetica") |>
+  highlight_keys(
+    keys = wordle_counts_ordered$key, 
+    fill = wordle_counts_ordered$color, 
+    alpha = 0.7,  
+    colour = NA
+  )
+
+```
+

@@ -64,7 +64,7 @@ wordle_counts <- wordle_counts |>
     n > 217 & n <= 429 ~ "#87CEEB", #sky blue
     n > 429 & n <= 646 ~ "#0000FF", #blue
     n > 646 & n <= 882 ~ "#DC143C", #crimson
-    n > 882 ~ "#8B0000" #crimson
+    n > 882 ~ "#8B0000" #dark red
   ),
   first_letter = str_to_upper(first_letter)
   )
@@ -90,14 +90,13 @@ test <- keys |>
 
 test <- test |>
   mutate(color = case_when(
-    is.na(color) ~ "#8A9A5B",
+    is.na(color) ~ "#8A9A5B", #sage green
     n <= 217 ~ "#FFFF00", #yellow
     n > 217 & n <= 429 ~ "#87CEEB", #sky blue
     n > 429 & n <= 646 ~ "#0000FF", #blue
     n > 646 & n <= 882 ~ "#DC143C", #crimson
-    n > 882 ~ "#8B0000" #crimson
-  )) |>
-  view()
+    n > 882 ~ "#8B0000" #dark red
+  ))
 
 ```
 

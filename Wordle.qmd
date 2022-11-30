@@ -36,22 +36,6 @@ wordle_counts <- wordle |>
 ```
 
 ```{r}
-#| label: setting-conditions
-
-wordle_counts <- wordle_counts |>
-  mutate(color = case_when(
-    n <= 217 ~ "#FFFF00", #yellow
-    n > 217 & n <= 429 ~ "#87CEEB", #sky blue
-    n > 429 & n <= 646 ~ "#0000FF", #blue
-    n > 646 & n <= 882 ~ "#DC143C", #crimson
-    n > 882 ~ "#8B0000" #crimson
-  ),
-  first_letter = str_to_upper(first_letter)
-  )
-
-```
-
-```{r}
 #| label: finding-color-boundaries
 
 wordle_counts |>
@@ -72,6 +56,21 @@ wordle_counts |>
 ```
 
 ```{r}
+#| label: assigning-colors
+
+wordle_counts <- wordle_counts |>
+  mutate(color = case_when(
+    n <= 217 ~ "#FFFF00", #yellow
+    n > 217 & n <= 429 ~ "#87CEEB", #sky blue
+    n > 429 & n <= 646 ~ "#0000FF", #blue
+    n > 646 & n <= 882 ~ "#DC143C", #crimson
+    n > 882 ~ "#8B0000" #crimson
+  ),
+  first_letter = str_to_upper(first_letter)
+  )
+```
+
+```{r}
 #| label: fixing-order
 
 keys <- read_csv("https://raw.githubusercontent.com/sharlagelfand/ggkeyboard/main/data-raw/sixty_percent.csv")
@@ -80,12 +79,32 @@ wordle_counts_ordered <- keys |>
   filter(key_label %in% LETTERS) |>
   select(key)|>
   left_join(wordle_counts, by = c("key" = "first_letter"))
-
-
 ```
 
 ```{r}
-#| label: drawing-keyboard
+#| label: test
+
+test <- keys |>
+  select(key)|>
+  left_join(wordle_counts, by = c("key" = "first_letter"))
+
+test <- test |>
+  mutate(color = case_when(
+    is.na(color) ~ "#8A9A5B",
+    n <= 217 ~ "#FFFF00", #yellow
+    n > 217 & n <= 429 ~ "#87CEEB", #sky blue
+    n > 429 & n <= 646 ~ "#0000FF", #blue
+    n > 646 & n <= 882 ~ "#DC143C", #crimson
+    n > 882 ~ "#8B0000" #crimson
+  )) |>
+  view()
+
+```
+
+Keyboard with alphabet colored (Where Professor Mine and Martha left off)
+
+```{r}
+#| label: keyboard-with-alphabet-colored
 
 ggkeyboard(sixty_percent, palette = keyboard_palette("magic"), font_family = "Helvetica") |>
   highlight_keys(
@@ -94,6 +113,18 @@ ggkeyboard(sixty_percent, palette = keyboard_palette("magic"), font_family = "He
     alpha = 0.7,  
     colour = NA
   )
-
 ```
 
+Keyboard with the rest of the keys colored (what I added to the project)
+
+```{r}
+#| label: all-keys-colored
+
+ggkeyboard(sixty_percent, palette = keyboard_palette("magic"), font_family = "Helvetica") |>
+  highlight_keys(
+    keys = test$key, 
+    fill = test$color, 
+    alpha = 0.7,  
+    colour = NA
+  )
+```
